@@ -17,7 +17,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
         // Database Info
         private static final String DATABASE_NAME = "clockingSystemDatabase";
-        private static final int DATABASE_VERSION = 1;
+        private static final int DATABASE_VERSION = 3;
 
         // Table Names
         private static final String TABLE_SHIFTS = "ShiftRecords";
@@ -209,6 +209,70 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             }
             return shifts;
         }
+
+        // Login - Get employee password from username
+        public String loginUser(String username) {
+
+            String password = null;
+
+            // SELECT * FROM EMPLOYEES WHERE username = username
+            String SHIFTS_SELECT_QUERY =
+                    String.format("SELECT * FROM %s WHERE %s = ?",
+                            TABLE_EMPLOYEES,
+                            KEY_EMPLOYEE_USERNAME);
+
+            // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low
+            // disk space scenarios)
+            SQLiteDatabase db = getReadableDatabase();
+            Cursor cursor = db.rawQuery(SHIFTS_SELECT_QUERY, new String[] {username});
+            try {
+                if (cursor.moveToFirst()) {
+                    do {
+                        password = cursor.getString(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_PASSWORD));
+
+                    } while(cursor.moveToNext());
+                }
+            } catch (Exception e) {
+                Log.d(TAG, "Error: username not found.");
+            } finally {
+                if (cursor != null && !cursor.isClosed()) {
+                    cursor.close();
+                }
+            }
+            return password;
+        }
+
+    // Get employee details from database and create employee object
+    public Employee getUser(String username) {
+
+        Employee employee = null;
+
+        // SELECT * FROM EMPLOYEES WHERE username = username
+        String SHIFTS_SELECT_QUERY =
+                String.format("SELECT * FROM %s WHERE %s = ?",
+                        TABLE_EMPLOYEES,
+                        KEY_EMPLOYEE_USERNAME);
+
+        // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low
+        // disk space scenarios)
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(SHIFTS_SELECT_QUERY, new String[] {username});
+        try {
+            if (cursor.moveToFirst()) {
+                do {
+                    employee = new Employee(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_ID)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_NAME)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_USERNAME)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_PASSWORD)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_EMAIL)));
+
+                } while(cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Error: username not found.");
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+        }
+        return employee;
+    }
 
         // Update the user's password
         public int updateUserPassword(Employee employee) {
