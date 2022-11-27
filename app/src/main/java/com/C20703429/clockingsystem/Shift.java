@@ -1,20 +1,28 @@
 package com.C20703429.clockingsystem;
 
 public class Shift {
-    private Integer ID;
-    private Employee employee;
+    private int ID;
+    private Employee Employee;
     private java.sql.Date Date;
     private java.sql.Time startTime;
     private java.sql.Time endTime;
 
+    public Shift(int id, Employee employee, java.sql.Date date, java.sql.Time start, java.sql.Time end){
+        this.ID = id;
+        this.Employee = employee;
+        this.Date = date;
+        this.startTime = start;
+        this.endTime = end;
+    }
+
     public Integer getID() {
         return ID;
     }
-    public void setID(Integer iD) {
-        ID = iD;
+    public void setID(int id) {
+        ID = id;
     }
     public Employee getEmployee() {
-        return employee;
+        return Employee;
     }
     public void setEmployee(Employee employee) {
         this.employee = employee;
