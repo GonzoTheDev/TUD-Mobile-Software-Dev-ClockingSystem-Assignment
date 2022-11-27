@@ -3,11 +3,11 @@ package com.C20703429.clockingsystem;
 public class Shift {
     private int ID;
     private Employee Employee;
-    private java.sql.Date Date;
-    private java.sql.Time startTime;
-    private java.sql.Time endTime;
+    private String Date;
+    private String startTime;
+    private String endTime;
 
-    public Shift(int id, Employee employee, java.sql.Date date, java.sql.Time start, java.sql.Time end){
+    public Shift(int id, Employee employee, String date, String start, String end){
         this.ID = id;
         this.Employee = employee;
         this.Date = date;
@@ -25,24 +25,24 @@ public class Shift {
         return Employee;
     }
     public void setEmployee(Employee employee) {
-        this.employee = employee;
+        this.Employee = employee;
     }
-    public java.sql.Date getDate() {
+    public String getDate() {
         return Date;
     }
-    public void setDate(java.sql.Date date) {
+    public void setDate(String date) {
         Date = date;
     }
-    public java.sql.Time getStartTime() {
+    public String getStartTime() {
         return startTime;
     }
-    public void setStartTime(java.sql.Time startTime) {
+    public void setStartTime(String startTime) {
         this.startTime = startTime;
     }
-    public java.sql.Time getEndTime() {
+    public String getEndTime() {
         return endTime;
     }
-    public void setEndTime(java.sql.Time endTime) {
+    public void setEndTime(String endTime) {
         this.endTime = endTime;
     }
 }

@@ -13,7 +13,7 @@ import java.util.List;
 public class MyDatabaseHelper extends SQLiteOpenHelper {
 
         // Error Tag
-        public static final String TAG = "ERR: ";
+        public static final String TAG = "ERROR: ";
 
         // Database Info
         private static final String DATABASE_NAME = "clockingSystemDatabase";
@@ -111,10 +111,10 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             try {
 
                 ContentValues values = new ContentValues();
-                values.put(KEY_SHIFT_USER_ID_FK, shift.employeeID);
-                values.put(KEY_SHIFT_DATE, String.valueOf(shift.Date));
-                values.put(KEY_SHIFT_START, String.valueOf(shift.startTime));
-                values.put(KEY_SHIFT_END, String.valueOf(shift.endTime));
+                values.put(KEY_SHIFT_USER_ID_FK, shift.getEmployee().getID());
+                values.put(KEY_SHIFT_DATE, String.valueOf(shift.getDate()));
+                values.put(KEY_SHIFT_START, String.valueOf(shift.getStartTime()));
+                values.put(KEY_SHIFT_END, String.valueOf(shift.getEndTime()));
 
                 // Notice how we haven't specified the primary key. SQLite auto increments the primary key column.
                 db.insertOrThrow(TABLE_SHIFTS, null, values);
@@ -125,7 +125,6 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                 db.endTransaction();
             }
         }
-
 
 
         // Insert or update a user in the database
@@ -142,21 +141,21 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             db.beginTransaction();
             try {
                 ContentValues values = new ContentValues();
-                values.put(KEY_EMPLOYEE_USERNAME, user.Username);
-                values.put(KEY_EMPLOYEE_NAME, user.Name);
-                values.put(KEY_EMPLOYEE_PASSWORD, user.Password);
-                values.put(KEY_EMPLOYEE_EMAIL, user.Email);
+                values.put(KEY_EMPLOYEE_USERNAME, user.getUsername());
+                values.put(KEY_EMPLOYEE_NAME, user.getName());
+                values.put(KEY_EMPLOYEE_PASSWORD, user.getPassword());
+                values.put(KEY_EMPLOYEE_EMAIL, user.getEmail());
 
                 // First try to update the user in case the user already exists in the database
                 // This assumes userNames are unique
-                int rows = db.update(TABLE_EMPLOYEES, values, KEY_EMPLOYEE_USERNAME + "= ?", new String[]{user.Username});
+                int rows = db.update(TABLE_EMPLOYEES, values, KEY_EMPLOYEE_USERNAME + "= ?", new String[]{user.getUsername()});
 
                 // Check if update succeeded
                 if (rows == 1) {
                     // Get the primary key of the user we just updated
                     String usersSelectQuery = String.format("SELECT %s FROM %s WHERE %s = ?",
                             KEY_EMPLOYEE_ID, TABLE_EMPLOYEES, KEY_EMPLOYEE_USERNAME);
-                    Cursor cursor = db.rawQuery(usersSelectQuery, new String[]{String.valueOf(user.Username)});
+                    Cursor cursor = db.rawQuery(usersSelectQuery, new String[]{String.valueOf(user.getUsername())});
                     try {
                         if (cursor.moveToFirst()) {
                             userId = cursor.getInt(0);
@@ -181,69 +180,59 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         }
 
         // Get all employees shifts in the database
-        public List<Shift> getAllShifts(Employee user) {
-            List<Shift> posts = new ArrayList<>();
+        public List<Shift> getAllShifts(Employee employee) {
+            List<Shift> shifts = new ArrayList<>();
 
-            // SELECT * FROM POSTS
-            // LEFT OUTER JOIN USERS
-            // ON POSTS.KEY_POST_USER_ID_FK = USERS.KEY_USER_ID
-            String POSTS_SELECT_QUERY =
-                    String.format("SELECT * FROM %s LEFT OUTER JOIN %s ON %s.%s = %s.%s",
-                            TABLE_POSTS,
-                            TABLE_USERS,
-                            TABLE_POSTS, KEY_POST_USER_ID_FK,
-                            TABLE_USERS, KEY_USER_ID);
+            // SELECT * FROM SHIFTS WHERE EmployeeID = user.getID()
+            String SHIFTS_SELECT_QUERY =
+                    String.format("SELECT * FROM %s WHERE %s = %s",
+                            TABLE_SHIFTS,
+                            KEY_EMPLOYEE_ID, employee.getID());
 
             // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low
             // disk space scenarios)
             SQLiteDatabase db = getReadableDatabase();
-            Cursor cursor = db.rawQuery(POSTS_SELECT_QUERY, null);
+            Cursor cursor = db.rawQuery(SHIFTS_SELECT_QUERY, null);
             try {
                 if (cursor.moveToFirst()) {
                     do {
-                        User newUser = new User();
-                        newUser.userName = cursor.getString(cursor.getColumnIndex(KEY_USER_NAME));
-                        newUser.profilePictureUrl = cursor.getString(cursor.getColumnIndex(KEY_USER_PROFILE_PICTURE_URL));
-
-                        Post newPost = new Post();
-                        newPost.text = cursor.getString(cursor.getColumnIndex(KEY_POST_TEXT));
-                        newPost.user = newUser;
-                        posts.add(newPost);
+                        Shift newShift = new Shift(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_SHIFT_ID)), employee, cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_DATE)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_START)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_END)));
+                        shifts.add(newShift);
                     } while(cursor.moveToNext());
                 }
             } catch (Exception e) {
-                Log.d(TAG, "Error while trying to get posts from database");
+                Log.d(TAG, "Error while trying to get shifts from database");
             } finally {
                 if (cursor != null && !cursor.isClosed()) {
                     cursor.close();
                 }
             }
-            return posts;
+            return shifts;
         }
 
-        // Update the user's profile picture url
-        public int updateUserProfilePicture(User user) {
+        // Update the user's password
+        public int updateUserPassword(Employee employee) {
             SQLiteDatabase db = this.getWritableDatabase();
 
             ContentValues values = new ContentValues();
-            values.put(KEY_USER_PROFILE_PICTURE_URL, user.profilePictureUrl);
+            values.put(KEY_EMPLOYEE_PASSWORD, employee.getPassword());
 
             // Updating profile picture url for user with that userName
-            return db.update(TABLE_USERS, values, KEY_USER_NAME + " = ?",
-                    new String[] { String.valueOf(user.userName) });
+            return db.update(TABLE_EMPLOYEES, values, KEY_EMPLOYEE_USERNAME + " = ?",
+                    new String[] { String.valueOf(employee.getUsername()) });
         }
 
-        // Delete all posts and users in the database
-        public void deleteAllPostsAndUsers() {
+        // Delete all shifts and employees in the database
+        public void deleteAllShiftsAndEmployees() {
             SQLiteDatabase db = getWritableDatabase();
             db.beginTransaction();
             try {
                 // Order of deletions is important when foreign key relationships exist.
-                db.delete(TABLE_POSTS, null, null);
-                db.delete(TABLE_USERS, null, null);
+                db.delete(TABLE_SHIFTS, null, null);
+                db.delete(TABLE_EMPLOYEES, null, null);
                 db.setTransactionSuccessful();
             } catch (Exception e) {
-                Log.d(TAG, "Error while trying to delete all posts and users");
+                Log.d(TAG, "Error while trying to delete all shifts and employees");
             } finally {
                 db.endTransaction();
             }
