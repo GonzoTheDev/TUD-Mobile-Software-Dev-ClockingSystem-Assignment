@@ -248,7 +248,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         Employee employee = null;
 
         // SELECT * FROM EMPLOYEES WHERE username = username
-        String SHIFTS_SELECT_QUERY =
+        String EMPLOYEES_SELECT_QUERY =
                 String.format("SELECT * FROM %s WHERE %s = ?",
                         TABLE_EMPLOYEES,
                         KEY_EMPLOYEE_USERNAME);
@@ -256,7 +256,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low
         // disk space scenarios)
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.rawQuery(SHIFTS_SELECT_QUERY, new String[] {username});
+        Cursor cursor = db.rawQuery(EMPLOYEES_SELECT_QUERY, new String[] {username});
         try {
             if (cursor.moveToFirst()) {
                 do {

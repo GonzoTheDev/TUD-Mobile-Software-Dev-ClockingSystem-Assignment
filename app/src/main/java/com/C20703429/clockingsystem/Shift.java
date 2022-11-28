@@ -15,7 +15,7 @@ public class Shift {
         this.endTime = end;
     }
 
-    public Integer getID() {
+    public int getID() {
         return ID;
     }
     public void setID(int id) {

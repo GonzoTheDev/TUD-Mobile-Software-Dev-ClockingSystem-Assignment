@@ -57,6 +57,10 @@ public class LoginActivity extends AppCompatActivity implements Parcelable {
         return instance;
     }
 
+    // Prevent the back button from closing app
+    @Override
+    public void onBackPressed() {}
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,10 +96,10 @@ public class LoginActivity extends AppCompatActivity implements Parcelable {
                 String pwd = db.loginUser(username.getText().toString());
                 if(pwd != null && password.getText().toString().equals(pwd)) {
                     Employee employee = db.getUser(username.getText().toString());
-                    Toast.makeText(getApplicationContext(),"Hi " + employee.getName() + ". Logging in...",Toast.LENGTH_SHORT).show();
                     Intent i = new Intent(LoginActivity.this, MainActivity.class);
                     i.putExtra("EMPLOYEE", employee);
                     startActivity(i);
+                    finish();
                 }else{
                     Toast.makeText(getApplicationContext(), "Wrong Credentials",Toast.LENGTH_SHORT).show();
                 }
