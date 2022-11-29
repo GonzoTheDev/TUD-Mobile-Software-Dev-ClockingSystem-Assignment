@@ -112,16 +112,30 @@ public class MainActivity extends AppCompatActivity implements Parcelable {
                 String formattedTime = dt.format(c);
 
                 // Create new shift object
-                Shift newShift = new Shift(0, finalEmployee, formattedDate, formattedTime, null);
+                Shift newShift = new Shift(0, finalEmployee, formattedDate, formattedTime, null, MainActivity.getContext());
+                String result = newShift.addShift();
+                if(result != null){
+                    if(result == "fail"){
+                        // Toast success message
+                        Toast.makeText(getApplicationContext(), "You are already clocked in, please clock out first.", Toast.LENGTH_SHORT).show();
+                    }else{
+                        // Toast success message
+                        Toast.makeText(getApplicationContext(), "Clock in success: " + formattedDate + " " + formattedTime, Toast.LENGTH_SHORT).show();
+                    }
+                }else{
+                    // Toast success message
+                    Toast.makeText(getApplicationContext(), "Clock in failure.", Toast.LENGTH_SHORT).show();
+                }
+            }
 
-                // Create an instance of the database helper class
-                MyDatabaseHelper db = MyDatabaseHelper.getInstance(MainActivity.getContext());
+        });
 
-                // Pass the new shift object to the database helper class addShift method
-                db.addShift(newShift);
+        // Onclick listener for the Logout button
+        timeOutButton.setOnClickListener(new View.OnClickListener() {
 
-                // Toast success message
-                Toast.makeText(getApplicationContext(), "Clock in success: " + formattedDate + " " + formattedTime, Toast.LENGTH_SHORT).show();
+            @Override
+            public void onClick(View v) {
+                
             }
 
         });

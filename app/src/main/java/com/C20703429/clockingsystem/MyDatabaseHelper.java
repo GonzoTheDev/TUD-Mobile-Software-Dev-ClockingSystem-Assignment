@@ -101,7 +101,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         }
 
         // Insert a shift into the database
-        public void addShift(Shift shift) {
+        public boolean addShift(Shift shift) {
             // Create and/or open the database for writing
             SQLiteDatabase db = getWritableDatabase();
 
@@ -121,8 +121,10 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
             } catch (Exception e) {
                 Log.d(TAG, "Error while trying to add shift to database");
+                return false;
             } finally {
                 db.endTransaction();
+                return true;
             }
         }
 
@@ -180,7 +182,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         }
 
         // Get all employees shifts in the database
-        public List<Shift> getAllShifts(Employee employee) {
+        public List<Shift> getAllShifts(Employee employee, Context context) {
             List<Shift> shifts = new ArrayList<>();
 
             // SELECT * FROM SHIFTS WHERE EmployeeID = user.getID()
@@ -196,7 +198,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             try {
                 if (cursor.moveToFirst()) {
                     do {
-                        Shift newShift = new Shift(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_SHIFT_ID)), employee, cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_DATE)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_START)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_END)));
+                        Shift newShift = new Shift(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_SHIFT_ID)), employee, cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_DATE)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_START)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_END)), context.getApplicationContext());
                         shifts.add(newShift);
                     } while(cursor.moveToNext());
                 }

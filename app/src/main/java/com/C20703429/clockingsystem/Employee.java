@@ -41,6 +41,7 @@ public class Employee implements Parcelable {
     private String Username;
     private String Password;
     private String Email;
+    private boolean isClockedIn;
 
     public Employee(int id, String name, String username, String password, String email) {
         this.ID = id;
@@ -48,6 +49,7 @@ public class Employee implements Parcelable {
         this.Username = username;
         this.Password = password;
         this.Email = email;
+        this.isClockedIn = false;
     }
     public Integer getID() {
         return ID;
@@ -78,6 +80,13 @@ public class Employee implements Parcelable {
     }
     public void setEmail(String email) {
         Email = email;
+    }
+
+    public void ClockIn (Boolean clockedIn) {
+        this.isClockedIn = clockedIn;
+    }
+    public boolean isClockedIn(){
+        return isClockedIn;
     }
 
 }
