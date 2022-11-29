@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements Parcelable {
         setContentView(R.layout.activity_main);
 
         Employee employee = null;
+        final Shift[] currentShift = {null};
 
         // Get our parcelable extras from previous activity
         Bundle extras = getIntent().getExtras();
@@ -87,6 +88,9 @@ public class MainActivity extends AppCompatActivity implements Parcelable {
             finish();
         }
 
+        // Set final employee object
+        Employee finalEmployee = employee;
+
         // Create our button objects from corresponding views
         Button logoutButton = findViewById(R.id.logoutButton);
         Button timeInButton = findViewById(R.id.timeInButton);
@@ -94,7 +98,6 @@ public class MainActivity extends AppCompatActivity implements Parcelable {
         Button settingsButton = findViewById(R.id.settingsButton);
 
         // Onclick listener for the timeIn button
-        Employee finalEmployee = employee;
         timeInButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -112,8 +115,8 @@ public class MainActivity extends AppCompatActivity implements Parcelable {
                 String formattedTime = dt.format(c);
 
                 // Create new shift object
-                Shift newShift = new Shift(0, finalEmployee, formattedDate, formattedTime, null, MainActivity.getContext());
-                String result = newShift.addShift();
+                currentShift[0] = new Shift(0, finalEmployee, formattedDate, formattedTime, null, MainActivity.getContext());
+                String result = currentShift[0].addShift();
                 if(result != null){
                     if(result == "fail"){
                         // Toast success message
@@ -130,12 +133,38 @@ public class MainActivity extends AppCompatActivity implements Parcelable {
 
         });
 
+
         // Onclick listener for the Logout button
         timeOutButton.setOnClickListener(new View.OnClickListener() {
 
+            // Get Date and Time
+            Date c = Calendar.getInstance().getTime();
+
+            // Format Date
+            SimpleDateFormat df = new SimpleDateFormat("dd/mm/yyyy", Locale.getDefault());
+            String formattedDate = df.format(c);
+
+            // Format Time
+            SimpleDateFormat dt = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+            String formattedTime = dt.format(c);
+
             @Override
             public void onClick(View v) {
-                
+                if(finalEmployee.isClockedIn()){
+                    if(currentShift[0] != null){
+                        currentShift[0].setEndTime(formattedTime);
+                        if(currentShift[0].updateShift()){
+                            // Toast success message
+                            Toast.makeText(getApplicationContext(), "Clock out success: " + formattedDate + " " + formattedTime, Toast.LENGTH_SHORT).show();
+                        } else {
+                            // Toast success message
+                            Toast.makeText(getApplicationContext(), "Unknown error clocking out.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                } else {
+                    // Toast success message
+                    Toast.makeText(getApplicationContext(), "You have not clocked in.", Toast.LENGTH_SHORT).show();
+                }
             }
 
         });

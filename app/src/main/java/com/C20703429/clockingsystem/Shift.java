@@ -64,12 +64,25 @@ public class Shift {
 
             // Pass the new shift object to the database helper class addShift method
             if (db.addShift(this)) {
-                this.Employee.ClockIn(true);
+                this.Employee.ClockInOut(true);
                 result = "success";
                 return result;
             } else {
                 return null;
             }
+        }
+    }
+
+    public boolean updateShift() {
+        // Create an instance of the database helper class
+        MyDatabaseHelper db = MyDatabaseHelper.getInstance(this.context);
+
+        // Pass the new shift object to the database helper class updateShift method
+        if (db.updateShift(this)) {
+            this.Employee.ClockInOut(false);
+            return true;
+        } else {
+            return false;
         }
     }
 }

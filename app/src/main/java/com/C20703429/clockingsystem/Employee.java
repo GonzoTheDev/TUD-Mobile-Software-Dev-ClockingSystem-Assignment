@@ -82,8 +82,8 @@ public class Employee implements Parcelable {
         Email = email;
     }
 
-    public void ClockIn (Boolean clockedIn) {
-        this.isClockedIn = clockedIn;
+    public void ClockInOut (Boolean clockedInOut) {
+        this.isClockedIn = clockedInOut;
     }
     public boolean isClockedIn(){
         return isClockedIn;

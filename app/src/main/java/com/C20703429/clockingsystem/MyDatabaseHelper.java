@@ -102,6 +102,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
         // Insert a shift into the database
         public boolean addShift(Shift shift) {
+
             // Create and/or open the database for writing
             SQLiteDatabase db = getWritableDatabase();
 
@@ -119,6 +120,52 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                 // Notice how we haven't specified the primary key. SQLite auto increments the primary key column.
                 db.insertOrThrow(TABLE_SHIFTS, null, values);
                 db.setTransactionSuccessful();
+            } catch (Exception e) {
+                Log.d(TAG, "Error while trying to add shift to database");
+                return false;
+            } finally {
+                db.endTransaction();
+                return true;
+            }
+        }
+
+        public boolean updateShift(Shift shift) {
+            // Create and/or open the database for writing
+            SQLiteDatabase db = getWritableDatabase();
+
+            // It's a good idea to wrap our insert in a transaction. This helps with performance and ensures
+            // consistency of the database.
+            db.beginTransaction();
+            try {
+
+                // SELECT ID FROM SHIFTS WHERE EmployeeID = shift.getEmployee.getID() && SHIFT END is NULL
+                String SHIFTS_SELECT_QUERY =
+                        String.format("SELECT * FROM %s WHERE %s = %s && %s = %s",
+                                TABLE_SHIFTS,
+                                KEY_EMPLOYEE_ID, shift.getEmployee().getID(),
+                                KEY_SHIFT_END, null);
+                // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low
+                // disk space scenarios)
+                SQLiteDatabase db2 = getReadableDatabase();
+                Cursor cursor = db2.rawQuery(SHIFTS_SELECT_QUERY, null);
+                try {
+                    if (cursor.moveToFirst()) {
+                        do {
+                            ContentValues values = new ContentValues();
+                            values.put(KEY_SHIFT_END, String.valueOf(shift.getEndTime()));
+                            int shiftID = cursor.getInt(cursor.getColumnIndexOrThrow(KEY_SHIFT_ID));
+                            // Notice how we haven't specified the primary key. SQLite auto increments the primary key column.
+                            db.update(TABLE_SHIFTS, values, "ID=?", new String[]{String.valueOf(shiftID)});
+                            db.setTransactionSuccessful();
+                        }while(cursor.moveToNext());
+                    }
+                } catch (Exception e) {
+                    Log.d(TAG, "Error while trying to update shift end time.");
+                } finally {
+                    if (cursor != null && !cursor.isClosed()) {
+                        cursor.close();
+                    }
+                }
             } catch (Exception e) {
                 Log.d(TAG, "Error while trying to add shift to database");
                 return false;
