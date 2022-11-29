@@ -170,6 +170,16 @@ public class MainActivity extends AppCompatActivity implements Parcelable {
         });
 
         // Onclick listener for the Logout button
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+            }
+
+        });
+
+        // Onclick listener for the Logout button
         logoutButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
