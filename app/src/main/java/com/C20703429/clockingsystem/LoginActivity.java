@@ -15,6 +15,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class LoginActivity extends AppCompatActivity implements Parcelable {
 
+    /*
+        REFERENCE: The following code is from: http://www.java2s.com/Open-Source/Android_Free_Code/Development/studio/modelMyParcelable_java.htm
+    */
+
     private int mData;
 
     /* everything below here is for implementing Parcelable */
@@ -46,6 +50,8 @@ public class LoginActivity extends AppCompatActivity implements Parcelable {
     private LoginActivity(Parcel in) {
         mData = in.readInt();
     }
+
+    /* REFERENCE COMPLETE */
 
     private static LoginActivity  instance;
     public LoginActivity()

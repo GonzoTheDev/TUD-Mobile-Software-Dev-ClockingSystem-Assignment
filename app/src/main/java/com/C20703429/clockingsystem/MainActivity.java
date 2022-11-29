@@ -18,8 +18,15 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements Parcelable {
 
+    /*
+        REFERENCE: The following code is from: http://www.java2s.com/Open-Source/Android_Free_Code/Development/studio/modelMyParcelable_java.htm
+    */
+
     private int mData;
 
+    /* everything below here is for implementing Parcelable */
+
+    // 99.9% of the time you can just ignore this
     @Override
     public int describeContents() {
         return 0;
@@ -46,6 +53,8 @@ public class MainActivity extends AppCompatActivity implements Parcelable {
     private MainActivity(Parcel in) {
         mData = in.readInt();
     }
+
+    /* REFERENCE COMPLETE */
 
     private static MainActivity  instance;
     public MainActivity()
