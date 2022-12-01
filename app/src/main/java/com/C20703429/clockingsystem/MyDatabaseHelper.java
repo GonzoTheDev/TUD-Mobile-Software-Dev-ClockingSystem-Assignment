@@ -101,6 +101,10 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         // Insert a shift into the database
         public boolean addShift(Shift shift) {
 
+            boolean success = false;
+            Employee employee = shift.getEmployee();
+            int employeeID = employee.getID();
+
             // Create and/or open the database for writing
             SQLiteDatabase db = getWritableDatabase();
 
@@ -110,25 +114,27 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             try {
 
                 ContentValues values = new ContentValues();
-                values.put(KEY_SHIFT_USER_ID_FK, shift.getEmployee().getID());
+                values.put(KEY_SHIFT_USER_ID_FK, employeeID);
                 values.put(KEY_SHIFT_START, String.valueOf(shift.getStartTime()));
                 values.put(KEY_SHIFT_END, String.valueOf(shift.getEndTime()));
 
                 // Notice how we haven't specified the primary key. SQLite auto increments the primary key column.
                 db.insertOrThrow(TABLE_SHIFTS, null, values);
                 db.setTransactionSuccessful();
+                success = true;
             } catch (Exception e) {
                 Log.d(TAG, "Error while trying to add shift to database");
-                return false;
             } finally {
                 db.endTransaction();
-                return true;
             }
+
+            return success;
         }
 
         public boolean updateShift(Shift shift) {
             // Create and/or open the database for writing
             SQLiteDatabase db = getWritableDatabase();
+            boolean success = false;
 
             // It's a good idea to wrap our insert in a transaction. This helps with performance and ensures
             // consistency of the database.
@@ -137,7 +143,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
                 // SELECT ID FROM SHIFTS WHERE EmployeeID = shift.getEmployee.getID() && SHIFT END is NULL
                 String SHIFTS_SELECT_QUERY =
-                        String.format("SELECT * FROM %s WHERE %s = %s && %s = %s",
+                        String.format("SELECT * FROM %s WHERE %s = %s & %s = %s",
                                 TABLE_SHIFTS,
                                 KEY_EMPLOYEE_ID, shift.getEmployee().getID(),
                                 KEY_SHIFT_END, null);
@@ -163,13 +169,14 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                         cursor.close();
                     }
                 }
+                success = true;
             } catch (Exception e) {
                 Log.d(TAG, "Error while trying to add shift to database");
-                return false;
             } finally {
                 db.endTransaction();
-                return true;
             }
+
+            return success;
         }
 
 

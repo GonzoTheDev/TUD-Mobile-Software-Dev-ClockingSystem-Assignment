@@ -82,18 +82,58 @@ public class Shift {
         }
     }
 
-    public String calculateTime() throws ParseException {
-        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        Date startTime = format.parse(this.getStartTime());
-        Date endTime = format.parse(this.getEndTime());
-        long difference = endTime.getTime() - startTime.getTime();
-        long msPerHour = 1000*60*60;
-        long hours = difference/msPerHour;
-        long minutes = difference % msPerHour;
+    public String calculateTime() {
 
-        String result = Long.toString(hours) + "hrs " + Long.toString(minutes) + "mins";
+        String result = findDifference(this.getStartTime(), this.getEndTime());
 
         return result;
 
+    }
+    // Function to print difference in
+    // time start_date and end_date
+    public String findDifference(String start_date, String end_date)
+    {
+        String result = null;
+        // SimpleDateFormat converts the
+        // string format to date object
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+
+        // Try Block
+        try {
+
+            // parse method is used to parse
+            // the text from a string to
+            // produce the date
+            Date d1 = sdf.parse(start_date);
+            Date d2 = sdf.parse(end_date);
+
+
+            // Calculate time difference
+            // in milliseconds
+            long difference_In_Time = d2.getTime() - d1.getTime();
+
+            // Calculate time difference in
+            // seconds, minutes, hours, years,
+            // and days
+            long difference_In_Seconds = (difference_In_Time / 1000) % 60;
+
+            long difference_In_Minutes = (difference_In_Time / (1000 * 60)) % 60;
+
+            long difference_In_Hours = (difference_In_Time / (1000 * 60 * 60)) % 24;
+
+
+
+            // Print the date difference in
+            // years, in days, in hours, in
+            // minutes, and in seconds
+            result = difference_In_Hours + " hours, " + difference_In_Minutes + " minutes, " + difference_In_Seconds + " seconds";
+
+        }
+
+        // Catch the Exception
+        catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 }

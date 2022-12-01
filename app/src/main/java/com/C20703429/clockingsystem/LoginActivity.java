@@ -101,9 +101,8 @@ public class LoginActivity extends AppCompatActivity implements Parcelable {
                 MyDatabaseHelper db = MyDatabaseHelper.getInstance(LoginActivity.getContext());
                 String pwd = db.loginUser(username.getText().toString());
                 if(pwd != null && password.getText().toString().equals(pwd)) {
-                    Employee employee = db.getUser(username.getText().toString());
                     Intent i = new Intent(LoginActivity.this, MainActivity.class);
-                    i.putExtra("EMPLOYEE", employee);
+                    i.putExtra("employeeName", username.getText().toString());
                     startActivity(i);
                     finish();
                 }else{

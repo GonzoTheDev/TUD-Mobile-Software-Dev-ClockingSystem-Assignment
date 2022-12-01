@@ -22,45 +22,9 @@ import java.text.ParseException;
 import java.util.ArrayList;
 
 
-public class MyShiftsActivity extends ListActivity implements Parcelable {
+public class MyShiftsActivity extends ListActivity {
 
-    /*
-        REFERENCE: The following code is from: http://www.java2s.com/Open-Source/Android_Free_Code/Development/studio/modelMyParcelable_java.htm
-    */
 
-    private int mData;
-
-    /* everything below here is for implementing Parcelable */
-
-    // 99.9% of the time you can just ignore this
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    // write your object's data to the passed-in Parcel
-    @Override
-    public void writeToParcel(Parcel out, int flags) {
-        out.writeInt(mData);
-    }
-
-    // this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods
-    public static final Parcelable.Creator<MyShiftsActivity> CREATOR = new Parcelable.Creator<MyShiftsActivity>() {
-        public MyShiftsActivity createFromParcel(Parcel in) {
-            return new MyShiftsActivity(in);
-        }
-
-        public MyShiftsActivity[] newArray(int size) {
-            return new MyShiftsActivity[size];
-        }
-    };
-
-    // example constructor that takes a Parcel and gives you an object populated with it's values
-    private MyShiftsActivity(Parcel in) {
-        mData = in.readInt();
-    }
-
-    /* REFERENCE COMPLETE */
 
     private static MyShiftsActivity  instance;
     public MyShiftsActivity()
@@ -80,28 +44,26 @@ public class MyShiftsActivity extends ListActivity implements Parcelable {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_myshifts);
 
-        Employee employee = null;
+        // instantiate a database helper object
+        MyDatabaseHelper db = MyDatabaseHelper.getInstance(MyShiftsActivity.getContext());
 
-        // Get our parcelable extras from previous activity
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            employee = (Employee) getIntent().getParcelableExtra("EMPLOYEE");
-        }else{
-            Toast.makeText(getApplicationContext(), "Error: User not logged in.",Toast.LENGTH_SHORT).show();
-            Intent i = new Intent(MyShiftsActivity.this, LoginActivity.class);
-            finish();
-        }
+        Bundle p = getIntent().getExtras();
+        String employeeName = p.getString("employeeName");
+        Employee employee = db.getUser(employeeName);
+
 
         // create new array list of shift objects
         ArrayList<Shift> myShifts = new ArrayList<Shift>();
 
-        // instantiate a database helper object
-        MyDatabaseHelper db = MyDatabaseHelper.getInstance(MyShiftsActivity.getContext());
+
 
         // Pass employee object to getAllShifts method and store in array list
         myShifts = db.getAllShifts(employee, MyShiftsActivity.getContext());
+        String myS = String.valueOf(myShifts);
 
-        // instantiate our DogAdapter class,     giving it the row layout, and data source (Dogs)
+        Toast.makeText(getApplicationContext(), myS,Toast.LENGTH_SHORT).show();
+
+        // instantiate our ShiftAdapter class, giving it the row layout, and data source (Shifts)
         ShiftsAdapter myAdapter = new ShiftsAdapter(this, R.layout.rows, myShifts);
 
         // assign the adapter to the list .
@@ -130,7 +92,7 @@ public class MyShiftsActivity extends ListActivity implements Parcelable {
 
         /*
          * we are overriding the getView method here - this is what defines how each
-         * list Dog will look. The getView method runs once per row, moving the data from the
+         * list Shift will look. The getView method runs once per row, moving the data from the
          * datasource (in this case, arraylist) into the row textviews.
          */
         public View getView(int position, View convertView, ViewGroup parent)
@@ -149,7 +111,7 @@ public class MyShiftsActivity extends ListActivity implements Parcelable {
 
             /*
              * "position" is sent in as an argument to this method.
-             * It refers to the position of the current Dog object in the list.                  *
+             * It refers to the position of the current Shift object in the list.                  *
              */
             Shift currentShift = Shifts.get(position);
 
@@ -164,14 +126,10 @@ public class MyShiftsActivity extends ListActivity implements Parcelable {
                 TextView totalTimeText = (TextView) v.findViewById(R.id.totaltime);
 
 
-                shiftIdText.setText(currentShift.getID());
+                shiftIdText.setText(String.valueOf(currentShift.getID()));
                 startText.setText(String.valueOf(currentShift.getStartTime()));
-                endText.setText(currentShift.getEndTime());
-                try {
-                    totalTimeText.setText(currentShift.calculateTime());
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                endText.setText(String.valueOf(currentShift.getEndTime()));
+                totalTimeText.setText(String.valueOf(currentShift.calculateTime()));
 
             }
 
