@@ -2,20 +2,22 @@ package com.C20703429.clockingsystem;
 
 import android.content.Context;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Shift {
 
     private Context context;
 
     private int ID;
     private Employee Employee;
-    private String Date;
     private String startTime;
     private String endTime;
 
-    public Shift(int id, Employee employee, String date, String start, String end, Context context){
+    public Shift(int id, Employee employee, String start, String end, Context context){
         this.ID = id;
         this.Employee = employee;
-        this.Date = date;
         this.startTime = start;
         this.endTime = end;
         this.context=context;
@@ -32,12 +34,6 @@ public class Shift {
     }
     public void setEmployee(Employee employee) {
         this.Employee = employee;
-    }
-    public String getDate() {
-        return Date;
-    }
-    public void setDate(String date) {
-        Date = date;
     }
     public String getStartTime() {
         return startTime;
@@ -84,5 +80,20 @@ public class Shift {
         } else {
             return false;
         }
+    }
+
+    public String calculateTime() throws ParseException {
+        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date startTime = format.parse(this.getStartTime());
+        Date endTime = format.parse(this.getEndTime());
+        long difference = endTime.getTime() - startTime.getTime();
+        long msPerHour = 1000*60*60;
+        long hours = difference/msPerHour;
+        long minutes = difference % msPerHour;
+
+        String result = Long.toString(hours) + "hrs " + Long.toString(minutes) + "mins";
+
+        return result;
+
     }
 }

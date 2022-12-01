@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements Parcelable {
         Button logoutButton = findViewById(R.id.logoutButton);
         Button timeInButton = findViewById(R.id.timeInButton);
         Button timeOutButton = findViewById(R.id.timeOutButton);
+        Button myShiftsButton = findViewById(R.id.myShiftsButton);
         Button settingsButton = findViewById(R.id.settingsButton);
 
         // Onclick listener for the timeIn button
@@ -107,15 +108,11 @@ public class MainActivity extends AppCompatActivity implements Parcelable {
                 Date c = Calendar.getInstance().getTime();
 
                 // Format Date
-                SimpleDateFormat df = new SimpleDateFormat("dd/mm/yyyy", Locale.getDefault());
-                String formattedDate = df.format(c);
-
-                // Format Time
-                SimpleDateFormat dt = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-                String formattedTime = dt.format(c);
+                SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
+                String formattedTimeStamp = df.format(c);
 
                 // Create new shift object
-                currentShift[0] = new Shift(0, finalEmployee, formattedDate, formattedTime, null, MainActivity.getContext());
+                currentShift[0] = new Shift(0, finalEmployee, formattedTimeStamp, null, MainActivity.getContext());
                 String result = currentShift[0].addShift();
                 if(result != null){
                     if(result == "fail"){
@@ -123,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements Parcelable {
                         Toast.makeText(getApplicationContext(), "You are already clocked in, please clock out first.", Toast.LENGTH_SHORT).show();
                     }else{
                         // Toast success message
-                        Toast.makeText(getApplicationContext(), "Clock in success: " + formattedDate + " " + formattedTime, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Clock in success: " + formattedTimeStamp, Toast.LENGTH_SHORT).show();
                     }
                 }else{
                     // Toast success message
@@ -134,28 +131,24 @@ public class MainActivity extends AppCompatActivity implements Parcelable {
         });
 
 
-        // Onclick listener for the Logout button
+        // Onclick listener for the time out button
         timeOutButton.setOnClickListener(new View.OnClickListener() {
 
             // Get Date and Time
             Date c = Calendar.getInstance().getTime();
 
             // Format Date
-            SimpleDateFormat df = new SimpleDateFormat("dd/mm/yyyy", Locale.getDefault());
-            String formattedDate = df.format(c);
-
-            // Format Time
-            SimpleDateFormat dt = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-            String formattedTime = dt.format(c);
+            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
+            String formattedTimeStamp = df.format(c);
 
             @Override
             public void onClick(View v) {
                 if(finalEmployee.isClockedIn()){
                     if(currentShift[0] != null){
-                        currentShift[0].setEndTime(formattedTime);
+                        currentShift[0].setEndTime(formattedTimeStamp);
                         if(currentShift[0].updateShift()){
                             // Toast success message
-                            Toast.makeText(getApplicationContext(), "Clock out success: " + formattedDate + " " + formattedTime, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Clock out success: " + formattedTimeStamp, Toast.LENGTH_SHORT).show();
                         } else {
                             // Toast success message
                             Toast.makeText(getApplicationContext(), "Unknown error clocking out.", Toast.LENGTH_SHORT).show();
@@ -165,6 +158,18 @@ public class MainActivity extends AppCompatActivity implements Parcelable {
                     // Toast success message
                     Toast.makeText(getApplicationContext(), "You have not clocked in.", Toast.LENGTH_SHORT).show();
                 }
+            }
+
+        });
+
+        // Onclick listener for the Logout button
+        myShiftsButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, MyShiftsActivity.class);
+                i.putExtra("EMPLOYEE", finalEmployee);
+                startActivity(i);
             }
 
         });

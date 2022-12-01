@@ -26,7 +26,6 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         // Shifts Table Columns
         private static final String KEY_SHIFT_ID = "ID";
         private static final String KEY_SHIFT_USER_ID_FK = "EmployeeID";
-        private static final String KEY_SHIFT_DATE = "Date";
         private static final String KEY_SHIFT_START = "startTime";
         private static final String KEY_SHIFT_END = "endTime";
 
@@ -69,7 +68,6 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                     "(" +
                     KEY_SHIFT_ID + " INTEGER PRIMARY KEY," + // Define a primary key
                     KEY_SHIFT_USER_ID_FK + " INTEGER REFERENCES " + TABLE_EMPLOYEES + "," + // Define a foreign key
-                    KEY_SHIFT_DATE + " DATE," +
                     KEY_SHIFT_START + " TIME," +
                     KEY_SHIFT_END + " TIME" +
                     ")";
@@ -113,7 +111,6 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
                 ContentValues values = new ContentValues();
                 values.put(KEY_SHIFT_USER_ID_FK, shift.getEmployee().getID());
-                values.put(KEY_SHIFT_DATE, String.valueOf(shift.getDate()));
                 values.put(KEY_SHIFT_START, String.valueOf(shift.getStartTime()));
                 values.put(KEY_SHIFT_END, String.valueOf(shift.getEndTime()));
 
@@ -229,8 +226,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         }
 
         // Get all employees shifts in the database
-        public List<Shift> getAllShifts(Employee employee, Context context) {
-            List<Shift> shifts = new ArrayList<>();
+        public ArrayList<Shift> getAllShifts(Employee employee, Context context) {
+            ArrayList<Shift> shifts = new ArrayList<>();
 
             // SELECT * FROM SHIFTS WHERE EmployeeID = user.getID()
             String SHIFTS_SELECT_QUERY =
@@ -245,7 +242,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             try {
                 if (cursor.moveToFirst()) {
                     do {
-                        Shift newShift = new Shift(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_SHIFT_ID)), employee, cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_DATE)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_START)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_END)), context.getApplicationContext());
+                        Shift newShift = new Shift(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_SHIFT_ID)), employee, cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_START)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_END)), context.getApplicationContext());
                         shifts.add(newShift);
                     } while(cursor.moveToNext());
                 }
