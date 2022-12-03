@@ -20,11 +20,14 @@ import android.widget.Toast;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.ListIterator;
 
 
 public class MyShiftsActivity extends ListActivity {
 
-
+    // Error Tag
+    public static final String TAG = "MyShiftsActivity";
 
     private static MyShiftsActivity  instance;
     public MyShiftsActivity()
@@ -56,12 +59,9 @@ public class MyShiftsActivity extends ListActivity {
         ArrayList<Shift> myShifts = new ArrayList<Shift>();
 
 
-
         // Pass employee object to getAllShifts method and store in array list
         myShifts = db.getAllShifts(employee, MyShiftsActivity.getContext());
-        String myS = String.valueOf(myShifts);
 
-        Toast.makeText(getApplicationContext(), myS,Toast.LENGTH_SHORT).show();
 
         // instantiate our ShiftAdapter class, giving it the row layout, and data source (Shifts)
         ShiftsAdapter myAdapter = new ShiftsAdapter(this, R.layout.rows, myShifts);
@@ -129,7 +129,7 @@ public class MyShiftsActivity extends ListActivity {
                 shiftIdText.setText(String.valueOf(currentShift.getID()));
                 startText.setText(String.valueOf(currentShift.getStartTime()));
                 endText.setText(String.valueOf(currentShift.getEndTime()));
-                totalTimeText.setText(String.valueOf(currentShift.calculateTime()));
+                totalTimeText.setText(String.valueOf(currentShift.calcToString(currentShift.calculateTime())));
 
             }
 

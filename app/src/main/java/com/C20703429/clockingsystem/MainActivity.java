@@ -112,7 +112,8 @@ public class MainActivity extends AppCompatActivity {
                         currentShift.setEndTime(formattedTimeStamp2);
                         if(currentShift.updateShift()) {
 
-                            String totaltime = currentShift.calculateTime();
+                            int[] totaltimecalc = currentShift.calculateTime();
+                            String totaltime = currentShift.calcToString(totaltimecalc);
 
                             // Toast success message
                             Toast.makeText(getApplicationContext(), "Clock out success: " + totaltime, Toast.LENGTH_SHORT).show();
@@ -141,12 +142,15 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
+
         // Onclick listener for the Logout button
         settingsButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+                Intent i = new Intent(MainActivity.this, SettingsActivity.class);
+                i.putExtra("employeeName", employee.getUsername());
+                startActivity(i);
             }
 
         });

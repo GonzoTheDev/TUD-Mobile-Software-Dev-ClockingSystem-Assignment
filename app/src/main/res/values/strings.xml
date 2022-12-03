@@ -6,6 +6,8 @@
     <string name="TimeOut">Clock OUT</string>
     <string name="calculateHours">Calculate Hours</string>
     <string name="viewShifts">My Shifts</string>
+    <string name="deleteShifts">Delete All Shifts</string>
+    <string name="deleteAccount">Delete My Account</string>
     <string name="Settings">Settings</string>
     <string name="Register">Register</string>
     <string name="LoginMessage">Login</string>

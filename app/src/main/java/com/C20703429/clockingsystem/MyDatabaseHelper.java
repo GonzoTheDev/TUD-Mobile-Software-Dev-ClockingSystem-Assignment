@@ -7,13 +7,17 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class MyDatabaseHelper extends SQLiteOpenHelper {
 
         // Error Tag
-        public static final String TAG = "ERROR: ";
+        public static final String TAG = "MyDatabaseHelper";
 
         // Database Info
         private static final String DATABASE_NAME = "clockingSystemDatabase";
@@ -135,6 +139,10 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             // Create and/or open the database for writing
             SQLiteDatabase db = getWritableDatabase();
             boolean success = false;
+            int empID = shift.getEmployee().getID();
+
+
+
 
             // It's a good idea to wrap our insert in a transaction. This helps with performance and ensures
             // consistency of the database.
@@ -143,10 +151,10 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
                 // SELECT ID FROM SHIFTS WHERE EmployeeID = shift.getEmployee.getID() && SHIFT END is NULL
                 String SHIFTS_SELECT_QUERY =
-                        String.format("SELECT * FROM %s WHERE %s = %s & %s = %s",
+                        String.format("SELECT * FROM %s WHERE %s = %s ORDER BY ID DESC LIMIT 1",
                                 TABLE_SHIFTS,
-                                KEY_EMPLOYEE_ID, shift.getEmployee().getID(),
-                                KEY_SHIFT_END, null);
+                                KEY_SHIFT_USER_ID_FK, empID);
+                Log.d(TAG, SHIFTS_SELECT_QUERY);
                 // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low
                 // disk space scenarios)
                 SQLiteDatabase db2 = getReadableDatabase();
@@ -157,10 +165,13 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                             ContentValues values = new ContentValues();
                             values.put(KEY_SHIFT_END, String.valueOf(shift.getEndTime()));
                             int shiftID = cursor.getInt(cursor.getColumnIndexOrThrow(KEY_SHIFT_ID));
+                            Log.d(TAG, String.valueOf(shiftID));
                             // Notice how we haven't specified the primary key. SQLite auto increments the primary key column.
                             db.update(TABLE_SHIFTS, values, "ID=?", new String[]{String.valueOf(shiftID)});
                             db.setTransactionSuccessful();
                         }while(cursor.moveToNext());
+                    } else {
+                        Log.d(TAG, "Dang cursor");
                     }
                 } catch (Exception e) {
                     Log.d(TAG, "Error while trying to update shift end time.");
@@ -234,13 +245,15 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
         // Get all employees shifts in the database
         public ArrayList<Shift> getAllShifts(Employee employee, Context context) {
-            ArrayList<Shift> shifts = new ArrayList<>();
+            ArrayList<Shift> shifts = new ArrayList<Shift>();
 
             // SELECT * FROM SHIFTS WHERE EmployeeID = user.getID()
             String SHIFTS_SELECT_QUERY =
-                    String.format("SELECT * FROM %s WHERE %s = %s",
+                    String.format("SELECT * FROM %s WHERE %s = %s ORDER BY %s DESC",
                             TABLE_SHIFTS,
-                            KEY_EMPLOYEE_ID, employee.getID());
+                            KEY_SHIFT_USER_ID_FK,
+                            employee.getID(),
+                            KEY_SHIFT_ID);
 
             // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low
             // disk space scenarios)
@@ -262,6 +275,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             }
             return shifts;
         }
+
+
 
         // Login - Get employee password from username
         public String loginUser(String username) {
@@ -339,19 +354,41 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                     new String[] { String.valueOf(employee.getUsername()) });
         }
 
-        // Delete all shifts and employees in the database
-        public void deleteAllShiftsAndEmployees() {
+        // Delete all users shifts in the database
+        public boolean deleteAllShifts(Employee employee) {
+            boolean result = false;
             SQLiteDatabase db = getWritableDatabase();
             db.beginTransaction();
             try {
                 // Order of deletions is important when foreign key relationships exist.
-                db.delete(TABLE_SHIFTS, null, null);
-                db.delete(TABLE_EMPLOYEES, null, null);
+                db.delete(TABLE_SHIFTS, KEY_SHIFT_USER_ID_FK + "= ?", new String[]{employee.getID().toString()});
                 db.setTransactionSuccessful();
+                result = true;
             } catch (Exception e) {
-                Log.d(TAG, "Error while trying to delete all shifts and employees");
+                Log.d(TAG, "Error while trying to delete all shifts");
+                result = false;
             } finally {
                 db.endTransaction();
             }
+            return result;
+        }
+
+        // Delete user from the database
+        public boolean deleteAccount(Employee employee) {
+            boolean result = false;
+            SQLiteDatabase db = getWritableDatabase();
+            db.beginTransaction();
+            try {
+                // Order of deletions is important when foreign key relationships exist.
+                db.delete(TABLE_EMPLOYEES, KEY_EMPLOYEE_USERNAME + "= ?", new String[]{employee.getUsername()});
+                db.setTransactionSuccessful();
+                result = true;
+            } catch (Exception e) {
+                Log.d(TAG, "Error while trying to delete employee");
+                result = false;
+            } finally {
+                db.endTransaction();
+            }
+            return result;
         }
 }

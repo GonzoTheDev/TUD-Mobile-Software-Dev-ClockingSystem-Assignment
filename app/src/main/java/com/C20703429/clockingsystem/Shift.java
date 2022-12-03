@@ -48,6 +48,10 @@ public class Shift {
         this.endTime = endTime;
     }
 
+    public String toString() {
+        return "ID: " + ID + ", startTime: " + startTime + ", endTime: " + endTime;
+    }
+
     public String addShift () {
         String result;
 
@@ -82,18 +86,27 @@ public class Shift {
         }
     }
 
-    public String calculateTime() {
+    public int[] calculateTime() {
 
-        String result = findDifference(this.getStartTime(), this.getEndTime());
+        int[] calc = findDifference(this.getStartTime(), this.getEndTime());
+
+        return calc;
+
+    }
+
+    public static String calcToString(int[] dataset) {
+
+        String result = String.valueOf(dataset[0]) + "h, " + String.valueOf(dataset[1]) + "m, " + String.valueOf(dataset[2]) + "s";
 
         return result;
-
     }
     // Function to print difference in
     // time start_date and end_date
-    public String findDifference(String start_date, String end_date)
+    public int[] findDifference(String start_date, String end_date)
     {
-        String result = null;
+
+        int[] result = {0, 0, 0};
+
         // SimpleDateFormat converts the
         // string format to date object
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
@@ -126,7 +139,7 @@ public class Shift {
             // Print the date difference in
             // years, in days, in hours, in
             // minutes, and in seconds
-            result = difference_In_Hours + " hours, " + difference_In_Minutes + " minutes, " + difference_In_Seconds + " seconds";
+            result = new int[] {(int)difference_In_Hours, (int)difference_In_Minutes, (int)difference_In_Seconds};
 
         }
 
