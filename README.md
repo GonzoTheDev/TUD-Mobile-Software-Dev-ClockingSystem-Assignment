@@ -1,8 +1,11 @@
 # TUD-Mobile-Software-Dev-ClockingSystem-Assignment
 
 Student Name: Shane Buckley
+
 Student ID: C20703429
+
 Submission Date: 04/12/2022
+
 Description: Clocking app to record an employees arrival and departure times to/from work.
 
 
