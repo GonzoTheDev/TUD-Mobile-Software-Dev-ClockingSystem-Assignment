@@ -1,3 +1,7 @@
+/**
+
+ * This class handles the MyDatabaseHelper class which extends the SQLiteOpenHelper class.
+ */
 package com.C20703429.clockingsystem;
 
 import android.content.ContentValues;
@@ -6,13 +10,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 public class MyDatabaseHelper extends SQLiteOpenHelper {
 
@@ -40,32 +38,28 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         private static final String KEY_EMPLOYEE_PASSWORD = "Password";
         private static final String KEY_EMPLOYEE_EMAIL = "Email";
 
-        private static MyDatabaseHelper sInstance;
+        // Instantiate an instance of this class, create a constructor and a getContext method
+        private static MyDatabaseHelper instance;
 
-        public static synchronized MyDatabaseHelper getInstance(Context context) {
-            // Use the application context, which will ensure that you
-            // don't accidentally leak an Activity's context.
-            // See this article for more information: http://bit.ly/6LRzfx
-            if (sInstance == null) {
-                sInstance = new MyDatabaseHelper(context.getApplicationContext());
+        public static synchronized MyDatabaseHelper getContext(Context context) {
+            if (instance == null) {
+                instance = new MyDatabaseHelper(context.getApplicationContext());
             }
-            return sInstance;
+            return instance;
         }
 
         public MyDatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
         }
 
-        // Called when the database connection is being configured.
-        // Configure database settings for things like foreign key support, write-ahead logging, etc.
+        // Database configuration called when database is being configured
         @Override
         public void onConfigure(SQLiteDatabase db) {
             super.onConfigure(db);
             db.setForeignKeyConstraintsEnabled(true);
         }
 
-        // Called when the database is created for the FIRST time.
-        // If a database already exists on disk with the same DATABASE_NAME, this method will NOT be called.
+        // Method to create database tables, only called when the database is created for the first time.
         @Override
         public void onCreate(SQLiteDatabase db) {
             String CREATE_SHIFTS_TABLE = "CREATE TABLE " + TABLE_SHIFTS +
@@ -89,22 +83,21 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             db.execSQL(CREATE_EMPLOYEES_TABLE);
         }
 
-        // Called when the database needs to be upgraded.
-        // This method will only be called if a database already exists on disk with the same DATABASE_NAME,
-        // but the DATABASE_VERSION is different than the version of the database that exists on disk.
+        // Method to upgrade database is only be called if a database already exists on disk with the same DATABASE_NAME but the DATABASE_VERSION is different.
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             if (oldVersion != newVersion) {
-                // Simplest implementation is to drop all old tables and recreate them
+                // Drop old tables and recreate them
                 db.execSQL("DROP TABLE IF EXISTS " + TABLE_SHIFTS);
                 db.execSQL("DROP TABLE IF EXISTS " + TABLE_EMPLOYEES);
                 onCreate(db);
             }
         }
 
-        // Insert a shift into the database
+        // Method to insert a shift into the database
         public boolean addShift(Shift shift) {
 
+            // Initialize variables
             boolean success = false;
             Employee employee = shift.getEmployee();
             int employeeID = employee.getID();
@@ -112,17 +105,17 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             // Create and/or open the database for writing
             SQLiteDatabase db = getWritableDatabase();
 
-            // It's a good idea to wrap our insert in a transaction. This helps with performance and ensures
-            // consistency of the database.
+            // Try except block and begin db transaction
             db.beginTransaction();
             try {
 
+                // Set values to be stored in database
                 ContentValues values = new ContentValues();
                 values.put(KEY_SHIFT_USER_ID_FK, employeeID);
                 values.put(KEY_SHIFT_START, String.valueOf(shift.getStartTime()));
                 values.put(KEY_SHIFT_END, String.valueOf(shift.getEndTime()));
 
-                // Notice how we haven't specified the primary key. SQLite auto increments the primary key column.
+                // Insert values into shifts table
                 db.insertOrThrow(TABLE_SHIFTS, null, values);
                 db.setTransactionSuccessful();
                 success = true;
@@ -135,17 +128,17 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             return success;
         }
 
+        // Method to update the endTime of a shift
         public boolean updateShift(Shift shift) {
+
             // Create and/or open the database for writing
             SQLiteDatabase db = getWritableDatabase();
+
+            // Initialize variables
             boolean success = false;
             int empID = shift.getEmployee().getID();
 
-
-
-
-            // It's a good idea to wrap our insert in a transaction. This helps with performance and ensures
-            // consistency of the database.
+            // Try except block and begin db transaction
             db.beginTransaction();
             try {
 
@@ -154,93 +147,134 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                         String.format("SELECT * FROM %s WHERE %s = %s ORDER BY ID DESC LIMIT 1",
                                 TABLE_SHIFTS,
                                 KEY_SHIFT_USER_ID_FK, empID);
-                Log.d(TAG, SHIFTS_SELECT_QUERY);
-                // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low
-                // disk space scenarios)
+
+                // Create and/or open the database for reading
                 SQLiteDatabase db2 = getReadableDatabase();
+
+                // Instantiate a cursor object with our formatted select query
                 Cursor cursor = db2.rawQuery(SHIFTS_SELECT_QUERY, null);
+
+                // Try except block
                 try {
+
+                    // If cursor has results then read the first result
                     if (cursor.moveToFirst()) {
+
+                        // Do while loop to iterate the cursor objects results
                         do {
+                            // Create a content values object and store the shift end time
                             ContentValues values = new ContentValues();
                             values.put(KEY_SHIFT_END, String.valueOf(shift.getEndTime()));
+
+                            // get the shiftID from the cursor
                             int shiftID = cursor.getInt(cursor.getColumnIndexOrThrow(KEY_SHIFT_ID));
-                            Log.d(TAG, String.valueOf(shiftID));
-                            // Notice how we haven't specified the primary key. SQLite auto increments the primary key column.
+
+                            // Update the database with the necessary values to corresponding shiftIDs
                             db.update(TABLE_SHIFTS, values, "ID=?", new String[]{String.valueOf(shiftID)});
                             db.setTransactionSuccessful();
+
                         }while(cursor.moveToNext());
+
                     } else {
-                        Log.d(TAG, "Dang cursor");
+
+                        Log.d(TAG, "No results found.");
+
                     }
+
                 } catch (Exception e) {
+
                     Log.d(TAG, "Error while trying to update shift end time.");
+
                 } finally {
+
                     if (cursor != null && !cursor.isClosed()) {
+
                         cursor.close();
+
                     }
                 }
+
                 success = true;
             } catch (Exception e) {
+
                 Log.d(TAG, "Error while trying to add shift to database");
+
             } finally {
+
                 db.endTransaction();
+
             }
 
             return success;
         }
 
 
-        // Insert or update a user in the database
-        // Since SQLite doesn't support "upsert" we need to fall back on an attempt to UPDATE (in case the
-        // user already exists) optionally followed by an INSERT (in case the user does not already exist).
-        // Unfortunately, there is a bug with the insertOnConflict method
-        // (https://code.google.com/p/android/issues/detail?id=13045) so we need to fall back to the more
-        // verbose option of querying for the user's primary key if we did an update.
+        // Method to insert or update a user in the database
         public long addOrUpdateUser(Employee user) {
-            // The database connection is cached so it's not expensive to call getWriteableDatabase() multiple times.
+
+            // Create and/or open the database for writing
             SQLiteDatabase db = getWritableDatabase();
+
+            // Initialize the return variable to -1
             long userId = -1;
 
             db.beginTransaction();
             try {
+
+                // Set values to be stored in database
                 ContentValues values = new ContentValues();
                 values.put(KEY_EMPLOYEE_USERNAME, user.getUsername());
                 values.put(KEY_EMPLOYEE_NAME, user.getName());
                 values.put(KEY_EMPLOYEE_PASSWORD, user.getPassword());
                 values.put(KEY_EMPLOYEE_EMAIL, user.getEmail());
 
-                // First try to update the user in case the user already exists in the database
-                // This assumes userNames are unique
+                // Try to update user if already exists in database, username has unique constraint
                 int rows = db.update(TABLE_EMPLOYEES, values, KEY_EMPLOYEE_USERNAME + "= ?", new String[]{user.getUsername()});
 
                 // Check if update succeeded
                 if (rows == 1) {
-                    // Get the primary key of the user we just updated
+
+                    // Get the username for the user we just updated
                     String usersSelectQuery = String.format("SELECT %s FROM %s WHERE %s = ?",
                             KEY_EMPLOYEE_ID, TABLE_EMPLOYEES, KEY_EMPLOYEE_USERNAME);
                     Cursor cursor = db.rawQuery(usersSelectQuery, new String[]{String.valueOf(user.getUsername())});
+
                     try {
+
                         if (cursor.moveToFirst()) {
+
                             userId = cursor.getInt(0);
                             db.setTransactionSuccessful();
+
                         }
                     } finally {
+
                         if (cursor != null && !cursor.isClosed()) {
+
                             cursor.close();
+
                         }
                     }
                 } else {
-                    // user with this userName did not already exist, so insert new user
+
+                    // user with this username did not already exist, so insert new user
                     userId = db.insertOrThrow(TABLE_EMPLOYEES, null, values);
                     db.setTransactionSuccessful();
+
                 }
+
             } catch (Exception e) {
+
                 Log.d(TAG, "Error while trying to add or update user");
+
             } finally {
+
                 db.endTransaction();
+
             }
+
             return userId;
+
         }
 
         // Get all employees shifts in the database
@@ -255,25 +289,39 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                             employee.getID(),
                             KEY_SHIFT_ID);
 
-            // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low
-            // disk space scenarios)
+            // Create and/or open the database for writing
             SQLiteDatabase db = getReadableDatabase();
+
+            // Instantiate a cursor object with our formatted select query
             Cursor cursor = db.rawQuery(SHIFTS_SELECT_QUERY, null);
+
+            // Try except block
             try {
+
                 if (cursor.moveToFirst()) {
+
                     do {
                         Shift newShift = new Shift(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_SHIFT_ID)), employee, cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_START)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_SHIFT_END)), context.getApplicationContext());
                         shifts.add(newShift);
                     } while(cursor.moveToNext());
+
                 }
             } catch (Exception e) {
+
                 Log.d(TAG, "Error while trying to get shifts from database");
+
             } finally {
+
                 if (cursor != null && !cursor.isClosed()) {
+
                     cursor.close();
+
                 }
+
             }
+
             return shifts;
+
         }
 
 
@@ -281,6 +329,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         // Login - Get employee password from username
         public String loginUser(String username) {
 
+            // Initialize password string
             String password = null;
 
             // SELECT * FROM EMPLOYEES WHERE username = username
@@ -289,106 +338,173 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                             TABLE_EMPLOYEES,
                             KEY_EMPLOYEE_USERNAME);
 
-            // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low
-            // disk space scenarios)
+            // Create and/or open the database for writing
             SQLiteDatabase db = getReadableDatabase();
+
+            // Instantiate a cursor object with our formatted select query
             Cursor cursor = db.rawQuery(SHIFTS_SELECT_QUERY, new String[] {username});
+
+            // Try except block
             try {
                 if (cursor.moveToFirst()) {
+
                     do {
+
                         password = cursor.getString(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_PASSWORD));
 
                     } while(cursor.moveToNext());
                 }
             } catch (Exception e) {
+
                 Log.d(TAG, "Error: username not found.");
+
             } finally {
+
                 if (cursor != null && !cursor.isClosed()) {
+
                     cursor.close();
+
                 }
             }
+
             return password;
         }
 
-    // Get employee details from database and create employee object
-    public Employee getUser(String username) {
+        // Get employee details from database and create employee object
+        public Employee getUser(String username) {
 
-        Employee employee = null;
+            // Initialize employee object
+            Employee employee = null;
 
-        // SELECT * FROM EMPLOYEES WHERE username = username
-        String EMPLOYEES_SELECT_QUERY =
-                String.format("SELECT * FROM %s WHERE %s = ?",
-                        TABLE_EMPLOYEES,
-                        KEY_EMPLOYEE_USERNAME);
+            // SELECT * FROM EMPLOYEES WHERE username = username
+            String EMPLOYEES_SELECT_QUERY =
+                    String.format("SELECT * FROM %s WHERE %s = ?",
+                            TABLE_EMPLOYEES,
+                            KEY_EMPLOYEE_USERNAME);
 
-        // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low
-        // disk space scenarios)
-        SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.rawQuery(EMPLOYEES_SELECT_QUERY, new String[] {username});
-        try {
-            if (cursor.moveToFirst()) {
-                do {
-                    employee = new Employee(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_ID)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_NAME)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_USERNAME)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_PASSWORD)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_EMAIL)));
+            // Create and/or open the database for writing
+            SQLiteDatabase db = getReadableDatabase();
 
-                } while(cursor.moveToNext());
+            // Instantiate a cursor object with our formatted select query
+            Cursor cursor = db.rawQuery(EMPLOYEES_SELECT_QUERY, new String[] {username});
+
+            // Try except block
+            try {
+                if (cursor.moveToFirst()) {
+
+                    do {
+
+                        employee = new Employee(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_ID)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_NAME)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_USERNAME)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_PASSWORD)), cursor.getString(cursor.getColumnIndexOrThrow(KEY_EMPLOYEE_EMAIL)));
+
+                    } while(cursor.moveToNext());
+                }
+            } catch (Exception e) {
+
+                Log.d(TAG, "Error: username not found.");
+
+            } finally {
+
+                if (cursor != null && !cursor.isClosed()) {
+
+                    cursor.close();
+
+                }
             }
-        } catch (Exception e) {
-            Log.d(TAG, "Error: username not found.");
-        } finally {
-            if (cursor != null && !cursor.isClosed()) {
-                cursor.close();
-            }
+
+            return employee;
+
         }
-        return employee;
-    }
 
         // Update the user's password
         public int updateUserPassword(Employee employee) {
+
+            // Create and/or open the database for writing
             SQLiteDatabase db = this.getWritableDatabase();
 
+            // Set values to be stored in database
             ContentValues values = new ContentValues();
             values.put(KEY_EMPLOYEE_PASSWORD, employee.getPassword());
 
-            // Updating profile picture url for user with that userName
-            return db.update(TABLE_EMPLOYEES, values, KEY_EMPLOYEE_USERNAME + " = ?",
-                    new String[] { String.valueOf(employee.getUsername()) });
+            // Update the password for the row containing username
+            return db.update(TABLE_EMPLOYEES, values, KEY_EMPLOYEE_USERNAME + " = ?", new String[] { String.valueOf(employee.getUsername()) });
+
         }
 
-        // Delete all users shifts in the database
+        // Method to delete all users shifts in the database
         public boolean deleteAllShifts(Employee employee) {
+
+            // Initialize result boolean
             boolean result = false;
+
+            // Create and/or open the database for writing
             SQLiteDatabase db = getWritableDatabase();
+
+            // Start db transaction
             db.beginTransaction();
+
+            // Try except block
             try {
-                // Order of deletions is important when foreign key relationships exist.
+
+                // Delete all shifts belonging to userid foreign key
                 db.delete(TABLE_SHIFTS, KEY_SHIFT_USER_ID_FK + "= ?", new String[]{employee.getID().toString()});
                 db.setTransactionSuccessful();
+
+                // Set result to true
                 result = true;
+
             } catch (Exception e) {
+
                 Log.d(TAG, "Error while trying to delete all shifts");
+
+                // Set result to false
                 result = false;
+
             } finally {
+
                 db.endTransaction();
+
             }
+
             return result;
+
         }
 
-        // Delete user from the database
+        // Method to delete user from the database
         public boolean deleteAccount(Employee employee) {
+
+            // Initialize result boolean
             boolean result = false;
+
+            // Create and/or open the database for writing
             SQLiteDatabase db = getWritableDatabase();
+
+            // Start db transaction
             db.beginTransaction();
+
+            // Try except block
             try {
-                // Order of deletions is important when foreign key relationships exist.
+
+                // Delete user where row contains username
                 db.delete(TABLE_EMPLOYEES, KEY_EMPLOYEE_USERNAME + "= ?", new String[]{employee.getUsername()});
                 db.setTransactionSuccessful();
+
+                // set result to true
                 result = true;
+
             } catch (Exception e) {
+
                 Log.d(TAG, "Error while trying to delete employee");
+
+                // set result to false
                 result = false;
+
             } finally {
+
                 db.endTransaction();
+
             }
+
             return result;
+
         }
 }

@@ -2,26 +2,16 @@ package com.C20703429.clockingsystem;
 
 import android.app.ListActivity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 
 
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.ListIterator;
 
 
 public class MyShiftsActivity extends ListActivity {
@@ -48,7 +38,7 @@ public class MyShiftsActivity extends ListActivity {
         setContentView(R.layout.activity_myshifts);
 
         // instantiate a database helper object
-        MyDatabaseHelper db = MyDatabaseHelper.getInstance(MyShiftsActivity.getContext());
+        MyDatabaseHelper db = MyDatabaseHelper.getContext(MyShiftsActivity.getContext());
 
         Bundle p = getIntent().getExtras();
         String employeeName = p.getString("employeeName");

@@ -16,7 +16,7 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
 
         // instantiate a database helper object
-        MyDatabaseHelper db = MyDatabaseHelper.getInstance(MyShiftsActivity.getContext());
+        MyDatabaseHelper db = MyDatabaseHelper.getContext(MyShiftsActivity.getContext());
 
         Bundle p = getIntent().getExtras();
         String employeeName = p.getString("employeeName");

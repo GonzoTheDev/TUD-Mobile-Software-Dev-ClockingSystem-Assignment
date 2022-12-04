@@ -57,7 +57,7 @@ public class RegisterActivity extends AppCompatActivity {
                     password.setError( "Password is required!" );
                 } else {
                     if (password.getText().toString().equals(password2.getText().toString())) {
-                        MyDatabaseHelper db = MyDatabaseHelper.getInstance(RegisterActivity.getContext());
+                        MyDatabaseHelper db = MyDatabaseHelper.getContext(RegisterActivity.getContext());
                         Employee dbUsername = db.getUser(username.getText().toString());
                         if (dbUsername != null) {
                             username.setError( "Username is taken!" );
